@@ -27,7 +27,9 @@ import {
   Trees,
   Hospital,
   Store,
-  Warehouse
+  Warehouse,
+  Compass,
+  ArrowDownCircle
 } from 'lucide-react';
 import { GameState } from '../types';
 
@@ -107,6 +109,24 @@ const ActionPanel: React.FC<ActionPanelProps> = ({ gameState, isProcessing, onAc
       icon: <Home className="w-4 h-4" />,
       action: 'Return to the safehouse to rest and recover',
       description: 'Rest and heal',
+      color: 'info',
+      phase: 'exploration'
+    },
+    {
+      id: 'enter-dungeon',
+      label: 'Enter Dungeon',
+      icon: <ArrowDownCircle className="w-4 h-4" />,
+      action: 'Descend into a procedurally generated dungeon',
+      description: 'Generate new level',
+      color: 'danger',
+      phase: 'exploration'
+    },
+    {
+      id: 'explore-direction',
+      label: 'Explore Forward',
+      icon: <Compass className="w-4 h-4" />,
+      action: 'Move forward and explore the dungeon',
+      description: 'Advance exploration',
       color: 'info',
       phase: 'exploration'
     },
@@ -329,7 +349,7 @@ const ActionPanel: React.FC<ActionPanelProps> = ({ gameState, isProcessing, onAc
       <div className="flex flex-wrap gap-2">
         {selectedCategory === 'movement' &&
           explorationActions
-            .filter((btn) => ['explore-area', 'move-hospital', 'move-supermarket', 'move-warehouse', 'move-forest', 'return-safehouse'].includes(btn.id))
+            .filter((btn) => ['explore-area', 'move-hospital', 'move-supermarket', 'move-warehouse', 'move-forest', 'return-safehouse', 'enter-dungeon', 'explore-direction'].includes(btn.id))
             .map((btn) => renderButton(btn))}
 
         {selectedCategory === 'interaction' &&

@@ -18,8 +18,9 @@ import Button from './Button';
 import MarkdownText from './MarkdownText';
 import ActionPanel from './ActionPanel';
 import MapView from './MapView';
+import SaveLoadMenu from './SaveLoadMenu';
 import { worldManager } from '../lib/worldStateManager';
-import { Send, Image as ImageIcon, Heart, MapPin, Backpack, Activity, Skull, Clock, Shield, Target, Menu, Crosshair, Sword, Eye, PlusSquare, Search, Crown, Move, AlertTriangle, Hammer, Zap, Droplet, ArrowDown, UserPlus, ChevronsUp, Timer, HelpCircle, Flame, Biohazard, ShieldCheck, Siren, Wifi, WifiOff, Terminal, Grid3x3 } from 'lucide-react';
+import { Send, Image as ImageIcon, Heart, MapPin, Backpack, Activity, Skull, Clock, Shield, Target, Menu, Crosshair, Sword, Eye, PlusSquare, Search, Crown, Move, AlertTriangle, Hammer, Zap, Droplet, ArrowDown, UserPlus, ChevronsUp, Timer, HelpCircle, Flame, Biohazard, ShieldCheck, Siren, Wifi, WifiOff, Terminal, Grid3x3, Save } from 'lucide-react';
 
 interface GameScreenProps {
   config: GameConfig;
