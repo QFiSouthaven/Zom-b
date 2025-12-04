@@ -12,7 +12,7 @@
  * - Seeded RNG for multiplayer sync
  */
 
-import ROT from 'rot-js';
+import * as ROT from 'rot-js';
 
 export interface Tile {
   type: 'floor' | 'wall' | 'door' | 'grass' | 'water' | 'building' | 'ruins';

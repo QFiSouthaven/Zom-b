@@ -16,7 +16,10 @@ import * as GeminiService from '../services/geminiService';
 import { peerService } from '../services/peerService';
 import Button from './Button';
 import MarkdownText from './MarkdownText';
-import { Send, Image as ImageIcon, Heart, MapPin, Backpack, Activity, Skull, Clock, Shield, Target, Menu, Crosshair, Sword, Eye, PlusSquare, Search, Crown, Move, AlertTriangle, Hammer, Zap, Droplet, ArrowDown, UserPlus, ChevronsUp, Timer, HelpCircle, Flame, Biohazard, ShieldCheck, Siren, Wifi, WifiOff } from 'lucide-react';
+import ActionPanel from './ActionPanel';
+import MapView from './MapView';
+import { worldManager } from '../lib/worldStateManager';
+import { Send, Image as ImageIcon, Heart, MapPin, Backpack, Activity, Skull, Clock, Shield, Target, Menu, Crosshair, Sword, Eye, PlusSquare, Search, Crown, Move, AlertTriangle, Hammer, Zap, Droplet, ArrowDown, UserPlus, ChevronsUp, Timer, HelpCircle, Flame, Biohazard, ShieldCheck, Siren, Wifi, WifiOff, Terminal, Grid3x3 } from 'lucide-react';
 
 interface GameScreenProps {
   config: GameConfig;
@@ -31,7 +34,10 @@ const GameScreen: React.FC<GameScreenProps> = ({ config, onExit }) => {
   const [isProcessing, setIsProcessing] = useState(false);
   const [visualizingId, setVisualizingId] = useState<string | null>(null);
   const [showMobileStats, setShowMobileStats] = useState(false);
-  
+  const [useTextInput, setUseTextInput] = useState(false); // Toggle for advanced text input
+  const [showMap, setShowMap] = useState(false); // Toggle for map view
+  const [worldState, setWorldState] = useState(worldManager.getState());
+
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   // Multiplayer Roles
@@ -437,8 +443,51 @@ const GameScreen: React.FC<GameScreenProps> = ({ config, onExit }) => {
 
           {/* Input Area */}
           <div className="p-4 bg-slate-950 border-t border-slate-900 z-10">
-            {/* Quick Actions */}
-            {isCombat && (
+            {/* Mode Toggle */}
+            <div className="mb-3 flex items-center justify-between">
+              <div className="flex gap-2">
+                <button
+                  onClick={() => setUseTextInput(false)}
+                  className={`px-3 py-1.5 text-xs font-mono rounded-sm transition-all flex items-center gap-2 ${
+                    !useTextInput
+                      ? 'bg-blue-600 text-white'
+                      : 'bg-slate-800 text-slate-400 hover:text-slate-200'
+                  }`}
+                >
+                  <Grid3x3 className="w-3 h-3" />
+                  ACTIONS
+                </button>
+                <button
+                  onClick={() => setUseTextInput(true)}
+                  className={`px-3 py-1.5 text-xs font-mono rounded-sm transition-all flex items-center gap-2 ${
+                    useTextInput
+                      ? 'bg-blue-600 text-white'
+                      : 'bg-slate-800 text-slate-400 hover:text-slate-200'
+                  }`}
+                >
+                  <Terminal className="w-3 h-3" />
+                  TEXT
+                </button>
+              </div>
+              {isClient && (
+                <div className="text-[10px] text-slate-600 font-mono flex items-center gap-2">
+                  <Wifi className="w-3 h-3" />
+                  UPLINK
+                </div>
+              )}
+            </div>
+
+            {/* Action Panel (New) */}
+            {!useTextInput && (
+              <ActionPanel
+                gameState={gameState}
+                isProcessing={isProcessing}
+                onAction={handleSend}
+              />
+            )}
+
+            {/* Legacy Quick Actions (only in combat when using text input) */}
+            {useTextInput && isCombat && (
                 <div className="mb-3 flex flex-wrap gap-2 pb-2">
                     <button 
                         onClick={() => handleSend("Dash to change range / improve position")} 
@@ -520,32 +569,30 @@ const GameScreen: React.FC<GameScreenProps> = ({ config, onExit }) => {
                 </div>
             )}
 
-            <div className="max-w-4xl mx-auto flex gap-0 relative">
-              <input
-                type="text"
-                value={input}
-                onChange={(e) => setInput(e.target.value)}
-                onKeyDown={handleKeyDown}
-                placeholder={
-                    isClient && isProcessing ? "Transmitting to Host..." :
-                    isCombat ? `Combat Protocol Active (${gameState.actionPoints} AP). Select target or type command...` : "Enter command..."
-                }
-                className={`flex-1 bg-slate-900 border ${isCombat ? 'border-red-900/50 focus:border-red-500' : 'border-slate-800 focus:border-slate-600'} text-white px-4 py-4 focus:ring-0 outline-none font-mono text-sm disabled:opacity-50`}
-                disabled={isProcessing}
-                autoFocus
-              />
-              <Button 
-                onClick={() => handleSend()} 
-                disabled={!input.trim() || isProcessing}
-                className={`rounded-none px-6 ${isCombat ? 'bg-red-700 hover:bg-red-600' : 'bg-slate-800 hover:bg-slate-700'}`}
-              >
-                {isProcessing ? '...' : <Send className="w-4 h-4" />}
-              </Button>
-            </div>
-            {isClient && (
-                 <div className="text-center mt-2 text-[10px] text-slate-600 font-mono">
-                     UPLINK TO HOST ACTIVE // RELAYING COMMANDS
-                 </div>
+            {/* Text Input (only when useTextInput is true) */}
+            {useTextInput && (
+              <div className="max-w-4xl mx-auto flex gap-0 relative">
+                <input
+                  type="text"
+                  value={input}
+                  onChange={(e) => setInput(e.target.value)}
+                  onKeyDown={handleKeyDown}
+                  placeholder={
+                      isClient && isProcessing ? "Transmitting to Host..." :
+                      isCombat ? `Combat Protocol Active (${gameState.actionPoints} AP). Select target or type command...` : "Enter command..."
+                  }
+                  className={`flex-1 bg-slate-900 border ${isCombat ? 'border-red-900/50 focus:border-red-500' : 'border-slate-800 focus:border-slate-600'} text-white px-4 py-4 focus:ring-0 outline-none font-mono text-sm disabled:opacity-50`}
+                  disabled={isProcessing}
+                  autoFocus
+                />
+                <Button
+                  onClick={() => handleSend()}
+                  disabled={!input.trim() || isProcessing}
+                  className={`rounded-none px-6 ${isCombat ? 'bg-red-700 hover:bg-red-600' : 'bg-slate-800 hover:bg-slate-700'}`}
+                >
+                  {isProcessing ? '...' : <Send className="w-4 h-4" />}
+                </Button>
+              </div>
             )}
           </div>
         </main>
@@ -561,6 +608,33 @@ const GameScreen: React.FC<GameScreenProps> = ({ config, onExit }) => {
             )}
             
             <div className="overflow-y-auto flex-1 p-6 space-y-8">
+                {/* Map View Toggle & Display */}
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <h3 className="text-[10px] font-bold text-slate-600 uppercase tracking-widest">Tactical Map</h3>
+                    <button
+                      onClick={() => setShowMap(!showMap)}
+                      className={`px-2 py-1 text-xs font-mono rounded-sm transition-all flex items-center gap-1 ${
+                        showMap
+                          ? 'bg-blue-600 text-white'
+                          : 'bg-slate-800 text-slate-400 hover:text-slate-200'
+                      }`}
+                    >
+                      <Eye className="w-3 h-3" />
+                      {showMap ? 'HIDE' : 'SHOW'}
+                    </button>
+                  </div>
+                  {showMap && (
+                    <MapView
+                      world={worldState.world}
+                      playerPosition={worldState.playerPosition}
+                      visibleTiles={worldState.visibleTiles}
+                      tileSize={12}
+                      showMinimap={true}
+                    />
+                  )}
+                </div>
+
                 {/* Combat State Indicator */}
                 <div className={`p-4 border rounded-sm ${isCombat ? 'bg-red-950/30 border-red-500/50 animate-pulse' : 'bg-emerald-950/10 border-emerald-900/30'}`}>
                     <div className="flex items-center justify-between mb-1">
